@@ -1,0 +1,748 @@
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>영어 말하기 연습</title>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: Arial, "Malgun Gothic", sans-serif;
+    background: #f3f6ff;
+    color: #26324a;
+    margin: 0;
+    padding: 20px;
+  }
+
+  .app {
+    max-width: 700px;
+    margin: 0 auto;
+    background: white;
+    padding: 24px;
+    border-radius: 22px;
+    box-shadow: 0 5px 22px rgba(0,0,0,0.08);
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    margin-top: 5px;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #6b7280;
+    margin-bottom: 24px;
+  }
+
+  .settings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  select, button {
+    font-size: 16px;
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid #d5dbea;
+  }
+
+  select {
+    flex: 1;
+    min-width: 180px;
+    background: white;
+  }
+
+  button {
+    cursor: pointer;
+    background: #edf1ff;
+    color: #26324a;
+    font-weight: bold;
+  }
+
+  button:hover {
+    filter: brightness(0.97);
+  }
+
+  button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .progress-area {
+    margin: 18px 0;
+  }
+
+  .progress-text {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #5d6880;
+  }
+
+  .progress-bg {
+    width: 100%;
+    height: 10px;
+    background: #e9edfa;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: #6e8cff;
+    transition: width 0.2s;
+  }
+
+  .question-card {
+    background: #f8f9ff;
+    border: 2px solid #e8ecfb;
+    border-radius: 18px;
+    padding: 25px 18px;
+    text-align: center;
+    min-height: 190px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .question-label {
+    color: #74809a;
+    font-size: 15px;
+    margin-bottom: 15px;
+  }
+
+  .question {
+    font-size: 27px;
+    line-height: 1.6;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+  }
+
+  .answer {
+    margin-top: 18px;
+    font-size: 21px;
+    color: #365edb;
+    font-weight: bold;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .hint {
+    color: #818ba0;
+    font-size: 14px;
+    margin-top: 12px;
+  }
+
+  .buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .buttons button {
+    flex: 1;
+    min-width: 125px;
+  }
+
+  .primary {
+    background: #5275ee;
+    color: white;
+    border-color: #5275ee;
+  }
+
+  .mic {
+    background: #16a085;
+    color: white;
+    border-color: #16a085;
+    font-size: 18px;
+    padding: 15px;
+  }
+
+  .status {
+    text-align: center;
+    background: #f7f8fc;
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 16px;
+    line-height: 1.7;
+    min-height: 55px;
+    overflow-wrap: anywhere;
+  }
+
+  .result-box {
+    display: none;
+    margin-top: 20px;
+    padding: 18px;
+    border-radius: 15px;
+    background: #f1f7ff;
+  }
+
+  .result-box h2 {
+    margin-top: 0;
+  }
+
+  .result-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #dce5f5;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+
+  .correct {
+    color: #13805f;
+    font-weight: bold;
+  }
+
+  .incorrect {
+    color: #d14d55;
+    font-weight: bold;
+  }
+
+  .small-note {
+    font-size: 13px;
+    color: #798399;
+    line-height: 1.6;
+    margin-top: 18px;
+  }
+
+  @media (max-width: 480px) {
+    body {
+      padding: 10px;
+    }
+
+    .app {
+      padding: 16px;
+    }
+
+    h1 {
+      font-size: 24px;
+    }
+
+    .question {
+      font-size: 23px;
+    }
+
+    .answer {
+      font-size: 19px;
+    }
+  }
+</style>
+</head>
+
+<body>
+<div class="app">
+  <h1>🎤 영어 말하기 연습</h1>
+  <div class="subtitle">듣고, 생각하고, 영어로 말해 보세요!</div>
+
+  <div class="settings">
+    <select id="mode">
+      <option value="korean">한글 뜻 보고 영어로 말하기</option>
+      <option value="reading">영어 문장 읽기</option>
+    </select>
+
+    <select id="setSelect">
+      <option value="all">전체 문제</option>
+      <option value="1">1~10번</option>
+      <option value="2">11~20번</option>
+      <option value="wrong">틀린 문제 다시 풀기</option>
+    </select>
+  </div>
+
+  <div class="progress-area">
+    <div class="progress-text">
+      <span id="progressText">1 / 20번</span>
+      <span id="scoreText">맞힌 문제: 0개</span>
+    </div>
+    <div class="progress-bg">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+  </div>
+
+  <div class="question-card">
+    <div class="question-label" id="questionLabel">이 뜻을 영어로 말해 보세요.</div>
+    <div class="question" id="question"></div>
+    <div class="answer" id="answer" hidden></div>
+    <div class="hint" id="hint">정답을 보지 않고 먼저 말해 보세요!</div>
+  </div>
+
+  <div class="buttons">
+    <button class="mic" id="micBtn">🎙️ 영어로 말하기</button>
+    <button id="showAnswerBtn">정답 확인</button>
+    <button id="speakBtn">🔊 영어 듣기</button>
+  </div>
+
+  <div class="buttons">
+    <button id="prevBtn">← 이전 문제</button>
+    <button class="primary" id="nextBtn">다음 문제 →</button>
+  </div>
+
+  <div class="buttons">
+    <button id="finishBtn">결과 보기</button>
+    <button id="restartBtn">처음부터 다시</button>
+  </div>
+
+  <div class="status" id="status" aria-live="polite">
+    마이크 버튼을 누르고 영어로 말해 보세요.
+  </div>
+
+  <div class="result-box" id="resultBox">
+    <h2>📊 연습 결과</h2>
+    <div id="resultSummary"></div>
+    <div id="resultList"></div>
+    <div class="buttons">
+      <button class="primary" id="retryBtn">틀린 문제 다시 풀기</button>
+    </div>
+  </div>
+
+  <div class="small-note">
+    ※ 음성 인식은 발음 평가 시험이 아니라, 인식된 영어 문장과 정답을 비교하는 기능입니다.
+    관사나 복수형, 발음 때문에 정확히 말해도 틀리게 인식될 수 있어요.<br>
+    ※ 마이크 기능은 Chrome 브라우저에서 인터넷 연결 상태로 사용하는 것을 권장합니다.
+  </div>
+</div>
+
+<script>
+/*
+  문제를 추가하려면 아래 목록에
+  { ko: "한글 뜻", en: "영어 정답" }
+  형식으로 한 줄을 더 넣으면 됩니다.
+*/
+
+const questions = [
+  { ko: "나는 개 한 마리를 가지고 있어.", en: "I have a dog." },
+  { ko: "그 개는 상자 위에 있어.", en: "The dog is on the box." },
+  { ko: "코끼리 세 마리가 동물원으로 걸어가.", en: "Three elephants walk to the zoo." },
+  { ko: "나는 식당에 가고 싶어.", en: "I want to go to the restaurant." },
+  { ko: "그 고양이는 의자 아래에 있어.", en: "The cat is under the chair." },
+  { ko: "나는 사과 한 개를 먹어.", en: "I eat an apple." },
+  { ko: "그 소년은 공을 가지고 있어.", en: "The boy has a ball." },
+  { ko: "그 소녀는 책을 읽어.", en: "The girl reads a book." },
+  { ko: "나는 학교에 걸어가.", en: "I walk to school." },
+  { ko: "그 새는 나무 위에 있어.", en: "The bird is in the tree." },
+  { ko: "나는 물을 마시고 싶어.", en: "I want to drink water." },
+  { ko: "그들은 공원에서 놀아.", en: "They play in the park." },
+  { ko: "내 동생은 키가 커.", en: "My brother is tall." },
+  { ko: "그녀는 파란 가방을 가지고 있어.", en: "She has a blue bag." },
+  { ko: "나는 매일 영어를 공부해.", en: "I study English every day." },
+  { ko: "그는 아침을 먹어.", en: "He eats breakfast." },
+  { ko: "우리는 음악을 좋아해.", en: "We like music." },
+  { ko: "그 공은 책상 아래에 있어.", en: "The ball is under the desk." },
+  { ko: "나는 엄마와 함께 요리해.", en: "I cook with my mom." },
+  { ko: "그 강아지들은 빠르게 달려.", en: "The puppies run fast." }
+];
+
+let activeQuestions = [];
+let currentIndex = 0;
+let answers = {};
+let revealed = {};
+let recognition = null;
+let isListening = false;
+let runId = 0;
+
+const $ = id => document.getElementById(id);
+
+function normalize(text) {
+  return text
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/[.,!?;:]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/* 단어 순서와 누락 여부를 고려해 문장 유사도를 계산합니다. */
+function similarity(a, b) {
+  const x = normalize(a).split(" ").filter(Boolean);
+  const y = normalize(b).split(" ").filter(Boolean);
+
+  if (!x.length || !y.length) return 0;
+
+  const dp = Array.from(
+    { length: x.length + 1 },
+    () => Array(y.length + 1).fill(0)
+  );
+
+  for (let i = 0; i <= x.length; i++) dp[i][0] = i;
+  for (let j = 0; j <= y.length; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= x.length; i++) {
+    for (let j = 1; j <= y.length; j++) {
+      const cost = x[i - 1] === y[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost
+      );
+    }
+  }
+
+  const distance = dp[x.length][y.length];
+  return Math.max(0, 1 - distance / Math.max(x.length, y.length));
+}
+
+function getQuestionId() {
+  return activeQuestions[currentIndex];
+}
+
+function getQuestion() {
+  return questions[getQuestionId()];
+}
+
+function stopRecognition() {
+  runId++;
+
+  if (recognition) {
+    try {
+      recognition.abort();
+    } catch (e) {}
+  }
+
+  recognition = null;
+  isListening = false;
+  $("micBtn").textContent = "🎙️ 영어로 말하기";
+}
+
+function loadQuestions() {
+  const set = $("setSelect").value;
+
+  if (set === "wrong") {
+    activeQuestions = questions
+      .map((q, i) => i)
+      .filter(i => answers[i] && !answers[i].correct);
+
+    if (activeQuestions.length === 0) {
+      $("status").textContent =
+        "아직 틀린 문제가 없어요. 먼저 문제를 풀어 보세요!";
+      $("setSelect").value = "all";
+      activeQuestions = questions.map((q, i) => i);
+    }
+  } else if (set === "1") {
+    activeQuestions = questions
+      .map((q, i) => i)
+      .filter(i => i < 10);
+  } else if (set === "2") {
+    activeQuestions = questions
+      .map((q, i) => i)
+      .filter(i => i >= 10 && i < 20);
+  } else {
+    activeQuestions = questions.map((q, i) => i);
+  }
+
+  currentIndex = 0;
+  $("resultBox").style.display = "none";
+  render();
+}
+
+function render() {
+  if (!activeQuestions.length) {
+    $("question").textContent = "연습할 문제가 없어요.";
+    return;
+  }
+
+  const id = getQuestionId();
+  const q = getQuestion();
+  const mode = $("mode").value;
+
+  $("questionLabel").textContent =
+    mode === "korean"
+      ? "이 뜻을 영어로 말해 보세요."
+      : "영어 문장을 소리 내어 읽어 보세요.";
+
+  $("question").textContent =
+    mode === "korean" ? q.ko : q.en;
+
+  $("answer").textContent = "정답: " + q.en;
+  $("answer").hidden = !revealed[id];
+
+  $("hint").textContent = revealed[id]
+    ? "정답을 확인했어요. 직접 한 번 말해 보세요!"
+    : mode === "korean"
+      ? "영어로 먼저 말한 다음 정답을 확인해 보세요."
+      : "문장을 읽고 마이크 버튼을 눌러 보세요.";
+
+  $("progressText").textContent =
+    (currentIndex + 1) + " / " + activeQuestions.length + "번";
+
+  const attempted = Object.keys(answers).length;
+  const correct = Object.values(answers).filter(a => a.correct).length;
+  $("scoreText").textContent = "맞힌 문제: " + correct + "개";
+
+  $("progressBar").style.width =
+    ((currentIndex + 1) / activeQuestions.length * 100) + "%";
+
+  $("prevBtn").disabled = currentIndex === 0;
+  $("nextBtn").disabled = currentIndex === activeQuestions.length - 1;
+
+  const existing = answers[id];
+  if (existing) {
+    $("status").innerHTML =
+      "내가 말한 문장: <b>" + escapeHTML(existing.spoken) +
+      "</b><br>" +
+      (existing.correct
+        ? '<span class="correct">잘했어요! 정답으로 인정했어요.</span>'
+        : '<span class="incorrect">다시 말해 보거나 정답을 확인해 보세요.</span>') +
+      "<br>유사도: " + existing.percent + "%";
+  } else {
+    $("status").textContent = "마이크 버튼을 누르고 영어로 말해 보세요.";
+  }
+}
+
+function escapeHTML(text) {
+  return String(text).replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  })[char]);
+}
+
+function startListening() {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    $("status").textContent =
+      "이 브라우저에서는 음성 인식을 지원하지 않아요. 컴퓨터의 Chrome에서 사이트를 열어 주세요.";
+    return;
+  }
+
+  stopRecognition();
+
+  const thisRun = runId;
+  recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+  recognition.continuous = false;
+  recognition.maxAlternatives = 3;
+
+  const id = getQuestionId();
+  const q = getQuestion();
+
+  recognition.onstart = () => {
+    if (thisRun !== runId) return;
+    isListening = true;
+    $("micBtn").textContent = "🎙️ 듣고 있어요...";
+    $("status").textContent = "영어로 말해 보세요. 듣고 있어요!";
+  };
+
+  recognition.onresult = event => {
+    if (thisRun !== runId) return;
+
+    const alternatives = Array.from(event.results[0])
+      .map(item => item.transcript.trim())
+      .filter(Boolean);
+
+    let best = alternatives[0] || "";
+    let bestScore = similarity(best, q.en);
+
+    for (const alternative of alternatives.slice(1)) {
+      const score = similarity(alternative, q.en);
+      if (score > bestScore) {
+        best = alternative;
+        bestScore = score;
+      }
+    }
+
+    const percent = Math.round(bestScore * 100);
+
+    /*
+      완전히 일치하거나 유사도가 85% 이상이면 정답으로 인정합니다.
+      문장이 짧을 때는 관사나 단어 하나가 빠져도 점수가 달라질 수 있습니다.
+    */
+    const correct = normalize(best) === normalize(q.en) || bestScore >= 0.85;
+
+    answers[id] = {
+      spoken: best,
+      correct: correct,
+      percent: percent
+    };
+
+    revealed[id] = true;
+    render();
+
+    $("status").innerHTML =
+      "인식한 문장: <b>" + escapeHTML(best) + "</b><br>" +
+      (correct
+        ? '<span class="correct">🎉 잘했어요! 정답으로 인정했어요.</span>'
+        : '<span class="incorrect">조금 달라요. 정답을 보고 다시 말해 보세요.</span>') +
+      "<br>정답: <b>" + escapeHTML(q.en) + "</b>" +
+      "<br>유사도: " + percent + "%";
+  };
+
+  recognition.onerror = event => {
+    if (thisRun !== runId) return;
+
+    let message = "음성 인식 중 문제가 생겼어요.";
+
+    if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+      message =
+        "마이크 권한이 차단되어 있어요. Chrome 주소창 왼쪽의 사이트 설정에서 마이크를 허용해 주세요.";
+    } else if (event.error === "no-speech") {
+      message = "목소리가 들리지 않았어요. 마이크에 대고 다시 말해 보세요.";
+    } else if (event.error === "network") {
+      message = "인터넷 연결을 확인한 뒤 다시 시도해 주세요.";
+    } else if (event.error === "audio-capture") {
+      message = "마이크를 찾을 수 없어요. 마이크 연결과 Windows 입력 장치를 확인해 주세요.";
+    } else if (event.error === "aborted") {
+      return;
+    }
+
+    $("status").textContent = message;
+  };
+
+  recognition.onend = () => {
+    if (thisRun !== runId) return;
+    isListening = false;
+    $("micBtn").textContent = "🎙️ 영어로 말하기";
+  };
+
+  try {
+    recognition.start();
+  } catch (error) {
+    $("status").textContent =
+      "음성 인식을 시작하지 못했어요. 잠시 후 다시 눌러 주세요.";
+  }
+}
+
+function speakEnglish() {
+  if (!("speechSynthesis" in window)) {
+    $("status").textContent = "이 브라우저에서는 영어 음성 재생을 지원하지 않아요.";
+    return;
+  }
+
+  const q = getQuestion();
+  if (!q) return;
+
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(q.en);
+  utterance.lang = "en-US";
+  utterance.rate = 0.85;
+  utterance.pitch = 1;
+
+  const voices = window.speechSynthesis.getVoices();
+  const americanVoice = voices.find(v =>
+    /^en-US$/i.test(v.lang)
+  );
+
+  if (americanVoice) {
+    utterance.voice = americanVoice;
+  }
+
+  window.speechSynthesis.speak(utterance);
+}
+
+function showResults() {
+  stopRecognition();
+
+  const box = $("resultBox");
+  box.style.display = "block";
+
+  const attemptedIds = activeQuestions.filter(id => answers[id]);
+  const correctCount = attemptedIds.filter(id => answers[id].correct).length;
+  const wrongCount = attemptedIds.length - correctCount;
+  const notDone = activeQuestions.length - attemptedIds.length;
+
+  $("resultSummary").innerHTML =
+    "<p>전체 문제: <b>" + activeQuestions.length + "개</b></p>" +
+    "<p>시도한 문제: <b>" + attemptedIds.length + "개</b></p>" +
+    '<p class="correct">맞힌 문제: <b>' + correctCount + "개</b></p>" +
+    '<p class="incorrect">틀린 문제: <b>' + wrongCount + "개</b></p>" +
+    "<p>아직 풀지 않은 문제: <b>" + notDone + "개</b></p>";
+
+  if (attemptedIds.length === 0) {
+    $("resultList").innerHTML = "<p>먼저 한 문제 이상 말해 보세요!</p>";
+    return;
+  }
+
+  $("resultList").innerHTML = attemptedIds.map(id => {
+    const q = questions[id];
+    const a = answers[id];
+
+    return '<div class="result-item">' +
+      '<b>' + (id + 1) + '. ' + escapeHTML(q.ko) + '</b><br>' +
+      '정답: ' + escapeHTML(q.en) + '<br>' +
+      '내가 말한 문장: ' + escapeHTML(a.spoken) + '<br>' +
+      (a.correct
+        ? '<span class="correct">정답 · '
+        : '<span class="incorrect">다시 연습 · ') +
+      a.percent + '%</span></div>';
+  }).join("");
+
+  box.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+$("micBtn").addEventListener("click", startListening);
+
+$("showAnswerBtn").addEventListener("click", () => {
+  revealed[getQuestionId()] = true;
+  render();
+});
+
+$("speakBtn").addEventListener("click", speakEnglish);
+
+$("prevBtn").addEventListener("click", () => {
+  stopRecognition();
+  if (currentIndex > 0) currentIndex--;
+  render();
+});
+
+$("nextBtn").addEventListener("click", () => {
+  stopRecognition();
+
+  if (currentIndex < activeQuestions.length - 1) {
+    currentIndex++;
+    render();
+  } else {
+    showResults();
+  }
+});
+
+$("finishBtn").addEventListener("click", showResults);
+
+$("restartBtn").addEventListener("click", () => {
+  stopRecognition();
+  answers = {};
+  revealed = {};
+  currentIndex = 0;
+  $("resultBox").style.display = "none";
+  render();
+  $("status").textContent = "처음부터 시작해요. 영어로 말해 보세요!";
+});
+
+$("retryBtn").addEventListener("click", () => {
+  $("setSelect").value = "wrong";
+  loadQuestions();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+$("mode").addEventListener("change", () => {
+  stopRecognition();
+  render();
+});
+
+$("setSelect").addEventListener("change", () => {
+  stopRecognition();
+  loadQuestions();
+});
+
+window.speechSynthesis?.getVoices();
+loadQuestions();
+</script>
+</body>
+</html>
+```
