@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -250,17 +251,216 @@ button:disabled {
   color: #737d91;
 }
 
+/* ==============================
+   정답/오답 캐릭터 축하 화면
+   ============================== */
+
+.celebration-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: rgba(35, 44, 80, 0.55);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .25s ease, visibility .25s ease;
+  overflow: hidden;
+}
+
+.celebration-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.celebration-box {
+  position: relative;
+  z-index: 2;
+  width: min(100%, 430px);
+  padding: 25px 18px 30px;
+  border-radius: 30px;
+  background: #ffffff;
+  text-align: center;
+  box-shadow: 0 15px 55px #00000030;
+  transform: scale(.55) rotate(-5deg);
+  opacity: 0;
+}
+
+.celebration-overlay.show .celebration-box {
+  animation: celebrationPop .55s cubic-bezier(.2, 1.5, .5, 1) forwards;
+}
+
+.celebration-title {
+  margin: 0;
+  font-size: clamp(29px, 7vw, 43px);
+  font-weight: 900;
+  letter-spacing: 1px;
+  line-height: 1.25;
+  color: #5475ec;
+  overflow-wrap: anywhere;
+}
+
+.celebration-subtitle {
+  margin: 12px 0 0;
+  font-size: clamp(17px, 4vw, 22px);
+  font-weight: bold;
+  line-height: 1.6;
+  color: #4c5874;
+}
+
+.celebration-character {
+  display: block;
+  margin: 14px auto 8px;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  font-size: clamp(125px, 35vw, 190px);
+  line-height: 1.25;
+  transform-origin: center bottom;
+  filter: drop-shadow(0 8px 7px #00000015);
+}
+
+.celebration-overlay.show .celebration-character {
+  animation: characterBounce .75s ease-in-out infinite alternate;
+}
+
+.celebration-stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.celebration-star {
+  position: absolute;
+  font-size: 30px;
+  animation: starTwinkle .8s ease-in-out infinite alternate;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -30px;
+  z-index: 1;
+  width: 12px;
+  height: 18px;
+  border-radius: 3px;
+  pointer-events: none;
+  animation: confettiFall 2.5s linear forwards;
+}
+
+.sparkle {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  font-size: 27px;
+  animation: sparkleFloat 1.7s ease-out forwards;
+}
+
+.celebration-overlay.correct .celebration-title {
+  color: #5475ec;
+}
+
+.celebration-overlay.incorrect .celebration-title {
+  color: #e07848;
+}
+
+.celebration-overlay.incorrect .celebration-box {
+  background: #fffaf4;
+}
+
+@keyframes celebrationPop {
+  0% {
+    transform: scale(.55) rotate(-5deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.06) rotate(2deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+@keyframes characterBounce {
+  from {
+    transform: translateY(0) rotate(-4deg) scale(1);
+  }
+  to {
+    transform: translateY(-13px) rotate(4deg) scale(1.04);
+  }
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-5vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(760deg);
+    opacity: 0;
+  }
+}
+
+@keyframes starTwinkle {
+  from {
+    transform: scale(.75) rotate(-15deg);
+    opacity: .55;
+  }
+  to {
+    transform: scale(1.2) rotate(15deg);
+    opacity: 1;
+  }
+}
+
+@keyframes sparkleFloat {
+  0% {
+    transform: translateY(20px) scale(.4) rotate(0deg);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-90px) scale(1.3) rotate(80deg);
+    opacity: 0;
+  }
+}
+
 @media(max-width:480px) {
   body { padding: 9px; }
   .container { padding: 16px; }
   h1 { font-size: 23px; }
   .question { font-size: 23px; }
   .answer { font-size: 21px; }
+
+  .celebration-box {
+    padding: 22px 12px 25px;
+  }
+
+  .celebration-character {
+    font-size: clamp(125px, 42vw, 175px);
+  }
+}
+
+@media(prefers-reduced-motion: reduce) {
+  .celebration-overlay,
+  .celebration-box,
+  .celebration-character,
+  .confetti-piece,
+  .sparkle,
+  .celebration-star {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 </style>
 </head>
 
 <body>
+
 <div class="container">
 
   <h1>🎤 영어 말하기 연습</h1>
@@ -274,6 +474,7 @@ button:disabled {
       <option value="all">전체 문제</option>
       <option value="1">1~10번 문제</option>
       <option value="2">11~20번 문제</option>
+      <option value="3">21~25번 문제</option>
       <option value="wrong">틀린 문제 다시 풀기</option>
     </select>
   </div>
@@ -356,16 +557,41 @@ button:disabled {
 
 </div>
 
+<!-- 정답/오답 캐릭터 팝업 -->
+<div
+  class="celebration-overlay"
+  id="celebrationOverlay"
+  aria-live="polite"
+  aria-atomic="true"
+>
+  <div class="celebration-stars" id="celebrationStars"></div>
+
+  <div class="celebration-box">
+    <h2 class="celebration-title" id="celebrationTitle">
+      GOOD JOB!
+    </h2>
+
+    <div
+      class="celebration-character"
+      id="celebrationCharacter"
+      role="img"
+      aria-label="축하 캐릭터"
+    >🐰</div>
+
+    <p class="celebration-subtitle" id="celebrationSubtitle">
+      정말 잘했어요!
+    </p>
+  </div>
+</div>
+
 <script>
 
 /*
-정답 판정 기준 설정
+정답 판정 기준
 
 0.95 = 매우 엄격
 0.85 = 기본 설정
 0.75 = 비교적 관대
-
-숫자를 낮추면 정답으로 인정되는 범위가 넓어집니다.
 */
 
 const CORRECT_THRESHOLD = 0.85;
@@ -407,12 +633,6 @@ const questions = [
 let active = [];
 let index = 0;
 
-/*
-records: 정답 확인 버튼을 눌러 채점한 결과
-shown: 정답 공개 여부
-pendingAnswers: 아직 정답 확인을 누르지 않은 음성 인식 결과
-*/
-
 let records = {};
 let shown = {};
 let pendingAnswers = {};
@@ -420,6 +640,8 @@ let pendingAnswers = {};
 let recognition = null;
 let session = 0;
 
+let celebrationTimer = null;
+let celebrationElements = [];
 
 const $ = id => document.getElementById(id);
 
@@ -500,6 +722,159 @@ function currentQuestion() {
 
 
 /*
+캐릭터 효과 지우기
+*/
+
+function clearCelebration() {
+  if (celebrationTimer !== null) {
+    clearTimeout(celebrationTimer);
+    celebrationTimer = null;
+  }
+
+  const overlay = $("celebrationOverlay");
+
+  overlay.classList.remove("show", "correct", "incorrect");
+
+  celebrationElements.forEach(element => element.remove());
+  celebrationElements = [];
+
+  $("celebrationStars").innerHTML = "";
+}
+
+
+/*
+색종이와 반짝이 만들기
+*/
+
+function createConfetti() {
+  const overlay = $("celebrationOverlay");
+
+  const symbols = ["✨", "⭐", "💖", "🌟", "🎉"];
+
+  for (let i = 0; i < 48; i++) {
+    const piece = document.createElement("span");
+
+    piece.className = "confetti-piece";
+
+    piece.style.left = Math.random() * 100 + "%";
+    piece.style.animationDelay = Math.random() * 0.8 + "s";
+    piece.style.animationDuration = (1.8 + Math.random() * 1.5) + "s";
+
+    piece.style.backgroundColor =
+      ["#ff7aa2", "#ffd166", "#7bdff2", "#b2f7a8",
+       "#b8a1ff", "#ff9f68"][Math.floor(Math.random() * 6)];
+
+    piece.style.transform =
+      "rotate(" + Math.floor(Math.random() * 360) + "deg)";
+
+    overlay.appendChild(piece);
+    celebrationElements.push(piece);
+  }
+
+  for (let i = 0; i < 15; i++) {
+    const sparkle = document.createElement("span");
+
+    sparkle.className = "sparkle";
+    sparkle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+
+    sparkle.style.left = Math.random() * 94 + "%";
+    sparkle.style.top = (20 + Math.random() * 70) + "%";
+    sparkle.style.animationDelay = Math.random() * 0.9 + "s";
+
+    overlay.appendChild(sparkle);
+    celebrationElements.push(sparkle);
+  }
+
+  const starContainer = $("celebrationStars");
+
+  for (let i = 0; i < 8; i++) {
+    const star = document.createElement("span");
+
+    star.className = "celebration-star";
+    star.textContent = i % 2 === 0 ? "⭐" : "✨";
+
+    star.style.left = (5 + Math.random() * 90) + "%";
+    star.style.top = (5 + Math.random() * 90) + "%";
+    star.style.animationDelay = Math.random() * 0.7 + "s";
+
+    starContainer.appendChild(star);
+  }
+}
+
+
+/*
+정답이면 큰 토끼,
+오답이면 큰 곰돌이 표시
+
+correct는 실제 채점 결과를 그대로 사용하므로
+정답률 숫자만으로 정오답을 다시 판단하지 않음.
+*/
+
+function showCelebration(correct, percent) {
+  clearCelebration();
+
+  const overlay = $("celebrationOverlay");
+  const character = $("celebrationCharacter");
+
+  const praiseMessages = [
+    { title: "GOOD JOB!", subtitle: "정말 잘했어요! 🎉" },
+    { title: "AMAZING!", subtitle: "대단해요! 🌟" },
+    { title: "WELL DONE!", subtitle: "아주 훌륭해요! 💖" },
+    { title: "FANTASTIC!", subtitle: "멋지게 해냈어요! 🥳" },
+    { title: "YOU DID IT!", subtitle: "해냈어요! 정말 멋져요! 🎊" }
+  ];
+
+  const encouragementMessages = [
+    { title: "TRY AGAIN!", subtitle: "괜찮아요! 다시 해 봐요! 💪" },
+    { title: "YOU CAN DO IT!", subtitle: "조금만 더 연습해 봐요! 🌱" },
+    { title: "KEEP GOING!", subtitle: "계속 도전해 봐요! ⭐" },
+    { title: "ALMOST THERE!", subtitle: "다시 말해 보면 할 수 있어요! 💖" },
+    { title: "DON'T GIVE UP!", subtitle: "천천히 다시 해 봐요! 🐾" }
+  ];
+
+  let message;
+
+  if (correct && percent >= 95) {
+    message = {
+      title: "PERFECT!",
+      subtitle: "완벽해요! 최고예요! ⭐"
+    };
+  } else if (correct) {
+    message = praiseMessages[
+      Math.floor(Math.random() * praiseMessages.length)
+    ];
+  } else {
+    message = encouragementMessages[
+      Math.floor(Math.random() * encouragementMessages.length)
+    ];
+  }
+
+  $("celebrationTitle").textContent = message.title;
+  $("celebrationSubtitle").textContent = message.subtitle;
+
+  if (correct) {
+    character.textContent = "🐰";
+    character.setAttribute("aria-label", "축하하는 토끼");
+    overlay.classList.add("correct");
+  } else {
+    character.textContent = "🐻";
+    character.setAttribute("aria-label", "응원하는 곰돌이");
+    overlay.classList.add("incorrect");
+  }
+
+  createConfetti();
+
+  requestAnimationFrame(() => {
+    overlay.classList.add("show");
+  });
+
+  celebrationTimer = setTimeout(() => {
+    clearCelebration();
+  }, 2900);
+}
+
+
+/*
 마이크 중지
 */
 
@@ -547,6 +922,11 @@ function loadQuestions() {
     active = questions.map((q, i) => i)
       .filter(i => i >= 10 && i < 20);
 
+  } else if (value === "3") {
+
+    active = questions.map((q, i) => i)
+      .filter(i => i >= 20);
+
   } else {
 
     active = questions.map((q, i) => i);
@@ -562,14 +942,9 @@ function loadQuestions() {
 
 /*
 정답 단어별 색깔 표시
-
-초록색: 정답과 일치하는 단어
-노란색: 다른 단어로 인식된 부분
-회색: 아직 확인되지 않은 단어
 */
 
 function renderAnswerWords(answer, spoken) {
-
   const answerWords = answer.match(/\S+/g) || [];
 
   if (!spoken) {
@@ -581,16 +956,10 @@ function renderAnswerWords(answer, spoken) {
   }
 
   const spokenWords = normalize(spoken).split(" ").filter(Boolean);
-  const expectedWords = answerWords.map(word =>
-    normalize(word)
-  );
+  const expectedWords = answerWords.map(word => normalize(word));
 
   const n = expectedWords.length;
   const m = spokenWords.length;
-
-  /*
-  단어 단위 편집 거리 계산
-  */
 
   const dp = Array.from(
     { length: n + 1 },
@@ -602,7 +971,6 @@ function renderAnswerWords(answer, spoken) {
 
   for (let i = 1; i <= n; i++) {
     for (let j = 1; j <= m; j++) {
-
       const cost =
         expectedWords[i - 1] === spokenWords[j - 1] ? 0 : 1;
 
@@ -616,16 +984,10 @@ function renderAnswerWords(answer, spoken) {
 
   const wordStatus = Array(n).fill("pending");
 
-  /*
-  편집 거리 표를 거꾸로 따라가며
-  각 정답 단어의 상태를 결정
-  */
-
   let i = n;
   let j = m;
 
   while (i > 0 || j > 0) {
-
     if (
       i > 0 &&
       j > 0 &&
@@ -670,7 +1032,6 @@ function renderAnswerWords(answer, spoken) {
   }
 
   return answerWords.map((word, position) => {
-
     const status = wordStatus[position];
 
     const className =
@@ -683,7 +1044,6 @@ function renderAnswerWords(answer, spoken) {
     return '<span class="answer-word ' + className + '">' +
       escapeHTML(word) +
       '</span>';
-
   }).join(" ");
 }
 
@@ -703,14 +1063,9 @@ function render() {
 
   $("question").textContent = q.ko;
 
-  /*
-  정답은 shown[id]가 true일 때만 공개
-  */
-
   $("answer").hidden = !shown[id];
 
   if (shown[id]) {
-
     const spoken = pending
       ? pending.spoken
       : answered
@@ -726,13 +1081,11 @@ function render() {
       : "초록색 단어를 확인하며 문장을 다시 말해 보세요!";
 
   } else {
-
     $("answer").textContent = "";
     $("legend").hidden = true;
 
     $("hint").textContent =
       "영어로 먼저 말해 보세요. 정답은 버튼을 눌러야 나타나요!";
-
   }
 
   $("progressText").textContent =
@@ -750,13 +1103,7 @@ function render() {
   $("prevButton").disabled = index === 0;
   $("nextButton").disabled = index === active.length - 1;
 
-  /*
-  아직 채점하지 않은 답변이 있으면
-  인식한 문장만 보여 주고 정답은 공개하지 않음
-  */
-
   if (pending) {
-
     $("status").innerHTML =
       "인식한 문장: <b>" +
       escapeHTML(pending.spoken) +
@@ -767,7 +1114,6 @@ function render() {
   }
 
   if (answered) {
-
     $("status").innerHTML =
       "인식한 문장: <b>" +
       escapeHTML(answered.spoken) +
@@ -778,10 +1124,8 @@ function render() {
       "<br>유사도: " + answered.percent + "%";
 
   } else {
-
     $("status").textContent =
       "마이크 버튼을 누르고 영어로 말해 보세요.";
-
   }
 }
 
@@ -791,19 +1135,18 @@ function render() {
 */
 
 function startMic() {
-
   const SpeechRecognition =
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
   if (!SpeechRecognition) {
-
     $("status").textContent =
       "음성 인식을 지원하지 않아요. Chrome 브라우저에서 사이트를 열어 주세요.";
 
     return;
   }
 
+  clearCelebration();
   stopMic();
 
   const thisSession = session;
@@ -818,16 +1161,13 @@ function startMic() {
   recognition.maxAlternatives = 3;
 
   recognition.onstart = () => {
-
     if (thisSession !== session) return;
 
     $("micButton").textContent = "🎙️ 듣고 있어요...";
     $("status").textContent = "영어로 말해 보세요!";
-
   };
 
   recognition.onresult = event => {
-
     if (thisSession !== session) return;
 
     const alternatives = Array.from(event.results[0])
@@ -838,20 +1178,13 @@ function startMic() {
     let bestScore = similarity(best, q.en);
 
     alternatives.slice(1).forEach(text => {
-
       const score = similarity(text, q.en);
 
       if (score > bestScore) {
         best = text;
         bestScore = score;
       }
-
     });
-
-    /*
-    음성 인식 결과만 임시 저장.
-    여기서는 정답 공개나 채점을 하지 않음.
-    */
 
     pendingAnswers[id] = {
       spoken: best,
@@ -860,21 +1193,14 @@ function startMic() {
 
     render();
 
-    /*
-    정답 공개 여부와 상관없이
-    정답 확인 전에는 정오답을 알려 주지 않음.
-    */
-
     $("status").innerHTML =
       "인식한 문장: <b>" +
       escapeHTML(best) +
       "</b><br>" +
       "정답을 확인하려면 '정답 확인'을 눌러 주세요.";
-
   };
 
   recognition.onerror = event => {
-
     if (thisSession !== session) return;
 
     let message = "음성 인식 중 문제가 발생했어요.";
@@ -883,49 +1209,36 @@ function startMic() {
       event.error === "not-allowed" ||
       event.error === "service-not-allowed"
     ) {
-
       message =
         "마이크 권한을 허용해 주세요. Chrome 주소창 왼쪽의 사이트 설정을 확인하세요.";
 
     } else if (event.error === "no-speech") {
-
       message = "목소리가 들리지 않았어요. 다시 말해 보세요.";
 
     } else if (event.error === "network") {
-
       message = "인터넷 연결을 확인해 주세요.";
 
     } else if (event.error === "audio-capture") {
-
       message = "마이크가 연결되어 있는지 확인해 주세요.";
 
     } else if (event.error === "aborted") {
-
       return;
-
     }
 
     $("status").textContent = message;
-
   };
 
   recognition.onend = () => {
-
     if (thisSession !== session) return;
 
     $("micButton").textContent = "🎙️ 영어로 말하기";
-
   };
 
   try {
-
     recognition.start();
-
   } catch (e) {
-
     $("status").textContent =
       "다시 마이크 버튼을 눌러 주세요.";
-
   }
 }
 
@@ -933,30 +1246,25 @@ function startMic() {
 /*
 정답 공개 및 채점
 
-버튼을 눌렀을 때만 정답을 공개하고,
-음성 인식 결과가 있으면 채점함.
+정답 확인 버튼을 눌렀을 때만 채점.
+채점 결과에 따라 토끼 또는 곰돌이 표시.
 */
 
 function checkAnswer() {
-
   stopMic();
 
   const id = currentId();
   const q = currentQuestion();
   const pending = pendingAnswers[id];
 
-  /*
-  먼저 정답 공개
-  */
-
   shown[id] = true;
 
   /*
-  아직 말하지 않았다면 정답만 공개
+  아직 말하지 않았다면 정답만 공개.
+  캐릭터는 표시하지 않음.
   */
 
   if (!pending) {
-
     render();
 
     $("status").innerHTML =
@@ -968,12 +1276,7 @@ function checkAnswer() {
     return;
   }
 
-  /*
-  음성 인식 결과를 정답과 비교
-  */
-
   const score = similarity(pending.spoken, q.en);
-
   const percent = Math.round(score * 100);
 
   const correct =
@@ -985,10 +1288,6 @@ function checkAnswer() {
     correct,
     percent
   };
-
-  /*
-  채점 완료 후 임시 답변 제거
-  */
 
   delete pendingAnswers[id];
 
@@ -1006,19 +1305,21 @@ function checkAnswer() {
     "</b>" +
     "<br>유사도: " + percent + "%";
 
+  /*
+  실제 채점 결과를 전달.
+  정답이면 토끼, 오답이면 곰돌이.
+  */
+
+  showCelebration(correct, percent);
 }
 
 
 /*
 영어 음성 듣기
-
-정답을 공개한 뒤에만 재생 가능
 */
 
 function listenEnglish() {
-
   if (!shown[currentId()]) {
-
     $("status").textContent =
       "먼저 '정답 확인' 버튼을 눌러 영어 문장을 확인해 주세요.";
 
@@ -1026,7 +1327,6 @@ function listenEnglish() {
   }
 
   if (!("speechSynthesis" in window)) {
-
     $("status").textContent =
       "이 브라우저에서는 영어 음성을 재생할 수 없어요.";
 
@@ -1047,7 +1347,6 @@ function listenEnglish() {
 
   speechSynthesis.cancel();
   speechSynthesis.speak(utterance);
-
 }
 
 
@@ -1056,8 +1355,8 @@ function listenEnglish() {
 */
 
 function showResults() {
-
   stopMic();
+  clearCelebration();
 
   const attempted = active.filter(id => records[id]);
 
@@ -1075,7 +1374,6 @@ function showResults() {
     (active.length - attempted.length) + "개</p>";
 
   $("resultList").innerHTML = attempted.map(id => {
-
     const q = questions[id];
     const r = records[id];
 
@@ -1087,7 +1385,6 @@ function showResults() {
         ? '<span class="good">정답'
         : '<span class="bad">다시 연습') +
       " · " + r.percent + "%</span></div>";
-
   }).join("");
 
   $("results").style.display = "block";
@@ -1095,7 +1392,6 @@ function showResults() {
   $("results").scrollIntoView({
     behavior: "smooth"
   });
-
 }
 
 
@@ -1111,24 +1407,22 @@ $("listenButton").addEventListener("click", listenEnglish);
 
 
 $("prevButton").addEventListener("click", () => {
-
   stopMic();
+  clearCelebration();
 
   if (index > 0) index--;
 
   render();
-
 });
 
 
 $("nextButton").addEventListener("click", () => {
-
   stopMic();
+  clearCelebration();
 
   if (index < active.length - 1) index++;
 
   render();
-
 });
 
 
@@ -1136,8 +1430,8 @@ $("resultButton").addEventListener("click", showResults);
 
 
 $("resetButton").addEventListener("click", () => {
-
   stopMic();
+  clearCelebration();
 
   records = {};
   shown = {};
@@ -1150,11 +1444,11 @@ $("resetButton").addEventListener("click", () => {
   render();
 
   $("status").textContent = "처음부터 다시 시작해요!";
-
 });
 
 
 $("retryButton").addEventListener("click", () => {
+  clearCelebration();
 
   $("range").value = "wrong";
 
@@ -1164,16 +1458,14 @@ $("retryButton").addEventListener("click", () => {
     top: 0,
     behavior: "smooth"
   });
-
 });
 
 
 $("range").addEventListener("change", () => {
-
   stopMic();
+  clearCelebration();
 
   loadQuestions();
-
 });
 
 
@@ -1186,3 +1478,4 @@ loadQuestions();
 </script>
 </body>
 </html>
+```
