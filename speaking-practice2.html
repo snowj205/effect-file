@@ -829,28 +829,47 @@ correct는 실제 채점 결과를 그대로 사용하므로
 정답률 숫자만으로 정오답을 다시 판단하지 않음.
 */
 
+// 사용자가 직접 녹음한 칭찬/격려 음성 재생
+let encouragementAudio = null;
+function playEncouragement(fileName) {
+  try {
+    if (encouragementAudio) {
+      encouragementAudio.pause();
+      encouragementAudio.currentTime = 0;
+    }
+    encouragementAudio = new Audio(fileName);
+    encouragementAudio.volume = 1;
+    const playback = encouragementAudio.play();
+    if (playback && typeof playback.catch === "function") {
+      playback.catch(() => {
+        // 음성 파일 재생이 차단되어도 나머지 학습 기능은 계속 작동합니다.
+        console.warn("음성 파일을 재생하지 못했습니다:", fileName);
+      });
+    }
+  } catch (error) {
+    console.warn("음성 파일을 재생하지 못했습니다:", fileName, error);
+  }
+}
+
 function showCelebration(correct, percent) {
   clearCelebration();
 
   const overlay = $("celebrationOverlay");
   const character = $("celebrationCharacter");
 
-  let title, subtitle, imageFile, spokenPhrase;
+  let title, subtitle, imageFile;
   if (correct && percent >= 95) {
     title = "PERFECT!";
     subtitle = "완벽해요! 최고예요! ⭐";
     imageFile = "perfect.png";
-    spokenPhrase = "Perfect! Amazing job!";
   } else if (correct) {
     title = "GOOD JOB!";
     subtitle = "정말 잘했어요! 🎉";
     imageFile = "goodjob.png";
-    spokenPhrase = "Good job! You did it!";
   } else {
     title = "TRY AGAIN!";
     subtitle = "괜찮아요! 다시 해 봐요! 💪";
     imageFile = "tryagain.png";
-    spokenPhrase = "Try again! You can do it!";
   }
 
   $("celebrationTitle").textContent = title;
@@ -865,19 +884,14 @@ function showCelebration(correct, percent) {
   character.alt = correct ? "축하하는 토끼" : "다시 도전하라고 응원하는 곰돌이";
   overlay.classList.add(correct ? "correct" : "incorrect");
 
-  // 브라우저 내장 음성으로 영어 칭찬/격려 문장을 읽어 줍니다.
-  if ("speechSynthesis" in window) {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(spokenPhrase);
-    utterance.lang = "en-US";
-    utterance.rate = 0.92;
-    utterance.pitch = correct ? 1.12 : 1.0;
-    const voices = window.speechSynthesis.getVoices();
-    const usVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith("en-us"));
-    if (usVoice) utterance.voice = usVoice;
-    window.speechSynthesis.speak(utterance);
-  }
+  // 직접 녹음해 GitHub에 올린 음성 파일을 재생합니다.
+  // 파일은 speaking-practice.html과 같은 폴더에 있어야 합니다.
+  const encouragementFile = correct
+    ? (percent >= 95 ? "perfect.mp3" : "goodjob.mp3")
+    : "tryagain.mp3";
+  playEncouragement(encouragementFile);
 
+  // 효과음은 기존처럼 별도로 재생합니다.
   playSound(correct ? (percent >= 95 ? "perfect" : "correct") : "wrong");
   createConfetti();
   requestAnimationFrame(() => overlay.classList.add("show"));
