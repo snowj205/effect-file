@@ -1,1 +1,1524 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPEAKING TEST</title>
 
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 18px;
+  font-family: Arial, "Malgun Gothic", sans-serif;
+  background: #f1f5ff;
+  color: #26324a;
+}
+
+.container {
+  max-width: 680px;
+  margin: auto;
+  padding: 24px;
+  background: white;
+  border-radius: 22px;
+  box-shadow: 0 5px 22px #00000012;
+}
+
+h1 {
+  text-align: center;
+  font-size: 27px;
+}
+
+.description {
+  text-align: center;
+  color: #68738a;
+  line-height: 1.6;
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 24px 0 16px;
+}
+
+select, button {
+  padding: 12px;
+  border: 1px solid #d6ddef;
+  border-radius: 12px;
+  font-size: 16px;
+}
+
+select {
+  flex: 1;
+  min-width: 180px;
+  background: white;
+}
+
+button {
+  background: #eef2ff;
+  cursor: pointer;
+  font-weight: bold;
+  color: #26324a;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.progress-text {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #65708a;
+}
+
+.progress {
+  height: 9px;
+  background: #e8ecf8;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 22px;
+}
+
+.progress-fill {
+  width: 0;
+  height: 100%;
+  background: #6684f4;
+  transition: width .2s;
+}
+
+.card {
+  padding: 28px 18px;
+  min-height: 190px;
+  background: #f8f9ff;
+  border: 2px solid #e8ecfb;
+  border-radius: 18px;
+  text-align: center;
+}
+
+.label {
+  color: #7b8499;
+  font-size: 15px;
+  margin-bottom: 18px;
+}
+
+.question {
+  font-size: 27px;
+  font-weight: bold;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.answer {
+  margin-top: 18px;
+  color: #315cda;
+  font-size: 23px;
+  font-weight: bold;
+  line-height: 2;
+  overflow-wrap: anywhere;
+}
+
+.answer-word {
+  display: inline-block;
+  margin: 0 2px;
+  padding: 0 3px;
+  border-radius: 5px;
+  transition: background .2s, color .2s;
+}
+
+.word-pending {
+  color: #737d91;
+  background: #edf0f6;
+}
+
+.word-correct {
+  color: #116b4d;
+  background: #c9f3df;
+}
+
+.word-uncertain {
+  color: #8a5a00;
+  background: #ffedb5;
+}
+
+.hint {
+  margin-top: 12px;
+  color: #818ba0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.buttons button {
+  flex: 1;
+  min-width: 120px;
+}
+
+.mic {
+  background: #16876d;
+  color: white;
+  border-color: #16876d;
+  padding: 15px 12px;
+}
+
+.primary {
+  background: #5475ec;
+  color: white;
+  border-color: #5475ec;
+}
+
+.status {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #f5f7fc;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+  text-align: center;
+  min-height: 55px;
+}
+
+.results {
+  display: none;
+  margin-top: 24px;
+  padding: 18px;
+  background: #f5f8ff;
+  border-radius: 14px;
+}
+
+.result-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #dce3f2;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.good {
+  color: #13805f;
+  font-weight: bold;
+}
+
+.bad {
+  color: #c64750;
+  font-weight: bold;
+}
+
+.note {
+  margin-top: 22px;
+  color: #7a8499;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: #65708a;
+}
+
+.legend span {
+  padding: 5px 9px;
+  border-radius: 7px;
+}
+
+.legend-green {
+  background: #c9f3df;
+  color: #116b4d;
+}
+
+.legend-yellow {
+  background: #ffedb5;
+  color: #8a5a00;
+}
+
+.legend-gray {
+  background: #edf0f6;
+  color: #737d91;
+}
+
+/* ==============================
+   정답/오답 캐릭터 축하 화면
+   ============================== */
+
+.celebration-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: rgba(35, 44, 80, 0.55);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .25s ease, visibility .25s ease;
+  overflow: hidden;
+}
+
+.celebration-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.celebration-box {
+  position: relative;
+  z-index: 2;
+  width: min(100%, 430px);
+  padding: 25px 18px 30px;
+  border-radius: 30px;
+  background: #ffffff;
+  text-align: center;
+  box-shadow: 0 15px 55px #00000030;
+  transform: scale(.55) rotate(-5deg);
+  opacity: 0;
+}
+
+.celebration-overlay.show .celebration-box {
+  animation: celebrationPop .55s cubic-bezier(.2, 1.5, .5, 1) forwards;
+}
+
+.celebration-title {
+  margin: 0;
+  font-size: clamp(29px, 7vw, 43px);
+  font-weight: 900;
+  letter-spacing: 1px;
+  line-height: 1.25;
+  color: #5475ec;
+  overflow-wrap: anywhere;
+}
+
+.celebration-subtitle {
+  margin: 12px 0 0;
+  font-size: clamp(17px, 4vw, 22px);
+  font-weight: bold;
+  line-height: 1.6;
+  color: #4c5874;
+}
+
+.celebration-character {
+  display: block;
+  width: min(100%, 330px);
+  height: clamp(190px, 48vw, 310px);
+  object-fit: contain;
+  margin: 10px auto 4px;
+  transform-origin: center bottom;
+  filter: drop-shadow(0 8px 7px #00000015);
+  animation: none;
+}
+
+.celebration-overlay.show.correct .celebration-character {
+  animation: characterBounce .72s cubic-bezier(.3, .8, .4, 1) infinite alternate;
+}
+.celebration-overlay.show.incorrect .celebration-character {
+  animation: characterWiggle .42s ease-in-out 3;
+}
+.celebration-overlay.show .celebration-title {
+  animation: titlePop .55s cubic-bezier(.2, 1.5, .5, 1) both;
+}
+
+.celebration-stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.celebration-star {
+  position: absolute;
+  font-size: 30px;
+  animation: starTwinkle .8s ease-in-out infinite alternate;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -30px;
+  z-index: 1;
+  width: 12px;
+  height: 18px;
+  border-radius: 3px;
+  pointer-events: none;
+  animation: confettiFall 2.5s linear forwards;
+}
+
+.sparkle {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  font-size: 27px;
+  animation: sparkleFloat 1.7s ease-out forwards;
+}
+
+.celebration-overlay.correct .celebration-title {
+  color: #5475ec;
+}
+
+.celebration-overlay.incorrect .celebration-title {
+  color: #e07848;
+}
+
+.celebration-overlay.incorrect .celebration-box {
+  background: #fffaf4;
+}
+
+@keyframes characterWiggle {
+  0%, 100% { transform: rotate(0) scale(1); }
+  25% { transform: rotate(-7deg) scale(1.04); }
+  50% { transform: rotate(7deg) scale(1.07); }
+  75% { transform: rotate(-4deg) scale(1.03); }
+}
+@keyframes titlePop {
+  0% { transform: scale(.75); }
+  65% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+@keyframes celebrationPop {
+  0% {
+    transform: scale(.55) rotate(-5deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.06) rotate(2deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+@keyframes characterBounce {
+  from {
+    transform: translateY(0) rotate(-4deg) scale(1);
+  }
+  to {
+    transform: translateY(-13px) rotate(4deg) scale(1.04);
+  }
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-5vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(760deg);
+    opacity: 0;
+  }
+}
+
+@keyframes starTwinkle {
+  from {
+    transform: scale(.75) rotate(-15deg);
+    opacity: .55;
+  }
+  to {
+    transform: scale(1.2) rotate(15deg);
+    opacity: 1;
+  }
+}
+
+@keyframes sparkleFloat {
+  0% {
+    transform: translateY(20px) scale(.4) rotate(0deg);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-90px) scale(1.3) rotate(80deg);
+    opacity: 0;
+  }
+}
+
+@media(max-width:480px) {
+  body { padding: 9px; }
+  .container { padding: 16px; }
+  h1 { font-size: 23px; }
+  .question { font-size: 23px; }
+  .answer { font-size: 21px; }
+
+  .celebration-box {
+    padding: 22px 12px 25px;
+  }
+
+  .celebration-character {
+    width: min(100%, 280px);
+    height: clamp(175px, 52vw, 260px);
+  }
+}
+
+@media(prefers-reduced-motion: reduce) {
+  .celebration-overlay,
+  .celebration-box,
+  .celebration-character,
+  .confetti-piece,
+  .sparkle,
+  .celebration-star {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>🎤 영어 말하기 연습</h1>
+
+  <p class="description">
+    한글 뜻을 읽고 영어 문장으로 말해 보세요!
+  </p>
+
+  <div class="top">
+    <select id="range">
+      <option value="all">전체 문제</option>
+      <option value="1">1~10번 문제</option>
+      <option value="2">11~20번 문제</option>
+      <option value="3">21~25번 문제</option>
+      <option value="wrong">틀린 문제 다시 풀기</option>
+    </select>
+  </div>
+
+  <div class="progress-text">
+    <span id="progressText">1 / 25</span>
+    <span id="scoreText">맞힌 문제: 0개</span>
+  </div>
+
+  <div class="progress">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <div class="card">
+    <div class="label">이 문장을 영어로 말해 보세요.</div>
+
+    <div class="question" id="question"></div>
+
+    <div class="answer" id="answer" hidden></div>
+
+    <div class="legend" id="legend" hidden>
+      <span class="legend-green">초록색: 일치</span>
+      <span class="legend-yellow">노란색: 다른 단어</span>
+      <span class="legend-gray">회색: 미확인</span>
+    </div>
+
+    <div class="hint" id="hint">
+      정답을 보지 않고 먼저 말해 보세요!
+    </div>
+  </div>
+
+  <div class="buttons">
+    <button class="mic" id="micButton">
+      🎙️ 영어로 말하기
+    </button>
+
+    <button id="answerButton">
+      정답 확인
+    </button>
+
+    <button id="listenButton">
+      🔊 영어 듣기
+    </button>
+  </div>
+
+  <div class="buttons">
+    <button id="prevButton">← 이전 문제</button>
+    <button class="primary" id="nextButton">다음 문제 →</button>
+  </div>
+
+  <div class="buttons">
+    <button id="resultButton">결과 보기</button>
+    <button id="resetButton">처음부터 다시</button>
+  </div>
+
+  <div class="status" id="status" aria-live="polite">
+    마이크 버튼을 누르고 영어로 말해 보세요.
+  </div>
+
+  <div class="results" id="results">
+    <h2>📊 연습 결과</h2>
+
+    <div id="summary"></div>
+    <div id="resultList"></div>
+
+    <div class="buttons">
+      <button class="primary" id="retryButton">
+        틀린 문제 다시 풀기
+      </button>
+    </div>
+  </div>
+
+  <div class="note">
+    ※ 음성 인식은 발음 자체를 전문적으로 평가하는 기능이 아니라,
+    인식된 문장과 정답을 비교하는 기능입니다.<br>
+    ※ 정답은 '정답 확인' 버튼을 눌러야 공개됩니다.<br>
+    ※ 단어별 색깔은 음성 인식 결과를 기준으로 표시됩니다.<br>
+    ※ 마이크 기능은 인터넷에 연결된 Chrome에서 사용하는 것을 권장합니다.
+  </div>
+
+</div>
+
+<!-- 정답/오답 캐릭터 팝업 -->
+<div
+  class="celebration-overlay"
+  id="celebrationOverlay"
+  aria-live="polite"
+  aria-atomic="true"
+>
+  <div class="celebration-stars" id="celebrationStars"></div>
+
+  <div class="celebration-box">
+    <h2 class="celebration-title" id="celebrationTitle">
+      GOOD JOB!
+    </h2>
+
+    <img
+      class="celebration-character"
+      id="celebrationCharacter"
+      src="perfect.png"
+      alt="축하하는 토끼"
+    >
+
+    <p class="celebration-subtitle" id="celebrationSubtitle">
+      정말 잘했어요!
+    </p>
+  </div>
+</div>
+
+<script>
+
+/*
+정답 판정 기준
+
+0.95 = 매우 엄격
+0.85 = 기본 설정
+0.75 = 비교적 관대
+*/
+
+const CORRECT_THRESHOLD = 0.85;
+
+
+/*
+문제 목록
+*/
+
+const questions = [
+  { ko: "엄마 염소가 외출을 해요.", en: "Mommy goat goes out." },
+  { ko: "그녀는 항상 버스로 걸어가요.", en: "she walks to the bus all the time." },
+  { ko: "나는 지금 점심을 먹고 싶어.", en: "I want to have lunch now." },
+  { ko: "내가 너희 엄마다.", en: "I am your mommy." },
+  { ko: "아니야, 당신은 나의 엄마가 아니에요.", en: "No, you are not my mommy." },
+  { ko: "그것은 엄마의 하얀 손이야.", en: "It is mommy's white hand." },
+  { ko: "공원으로 가자.", en: "Let's go to the park." },
+  { ko: "늑대는 공원에서 자.", en: "The wolf sleeps in the park." },
+  { ko: "그들은 지금 공원으로 가.", en: "They go to the park now." },
+  { ko: "그는 지금 잠들었어.", en: "He is asleep now." },
+  { ko: "엄마염소가 그녀의 아기들을 구해.", en: "Mommy goat saves her babies." },
+  { ko: "아기염소들이 점프해.", en: "The baby goats jump." },
+  { ko: "여기 큰 돌들이 있다.", en: "Here are big rocks." },
+  { ko: "늑대가 우물로 가.", en: "The wolf goes to the well." },
+  { ko: "나는 배고파.", en: "I am hungry." },
+  { ko: "나는 슬퍼.", en: "I am sad." },
+  { ko: "가난하고 배고픈 여우.", en: "The poor hungry fox." },
+  { ko: "그는 지금 집으로 돌아가기를 원해.", en: "He wants to go back home now." },
+  { ko: "지금 난 나갈 수 있어.", en: "Now I can get out." },
+  { ko: "나는 목이 말라.", en: "I am thirsty." },
+  { ko: "나는 물을 마시고 싶어.", en: "I want to drink some water." },
+  { ko: "그는 다시는 집으로 못 돌아와.", en: "He never goes back home." },
+  { ko: "너는 우리와 놀 수 없어.", en: "You cannot play with us." },
+  { ko: "너는 못생겼어.", en: "You are ugly." },
+  { ko: "그는 하루 종일 못 먹었어.", en: "He didn't eat all day long." }
+];
+
+
+let active = [];
+let index = 0;
+
+let records = {};
+let shown = {};
+let pendingAnswers = {};
+
+let recognition = null;
+let session = 0;
+
+let celebrationTimer = null;
+let celebrationElements = [];
+
+const $ = id => document.getElementById(id);
+
+
+/*
+텍스트 정리
+*/
+
+function normalize(text) {
+  return text.toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/[.,!?;:]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+
+/*
+문장 유사도 계산
+*/
+
+function similarity(a, b) {
+  const x = normalize(a).split(" ").filter(Boolean);
+  const y = normalize(b).split(" ").filter(Boolean);
+
+  if (!x.length || !y.length) return 0;
+
+  const dp = Array.from(
+    { length: x.length + 1 },
+    () => Array(y.length + 1).fill(0)
+  );
+
+  for (let i = 0; i <= x.length; i++) dp[i][0] = i;
+  for (let j = 0; j <= y.length; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= x.length; i++) {
+    for (let j = 1; j <= y.length; j++) {
+      const cost = x[i - 1] === y[j - 1] ? 0 : 1;
+
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost
+      );
+    }
+  }
+
+  return Math.max(
+    0,
+    1 - dp[x.length][y.length] / Math.max(x.length, y.length)
+  );
+}
+
+
+/*
+HTML에 안전하게 표시
+*/
+
+function escapeHTML(text) {
+  return String(text).replace(/[&<>"']/g, ch => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  })[ch]);
+}
+
+
+function currentId() {
+  return active[index];
+}
+
+
+function currentQuestion() {
+  return questions[currentId()];
+}
+
+
+/*
+캐릭터 효과 지우기
+*/
+
+function clearCelebration() {
+  if (celebrationTimer !== null) {
+    clearTimeout(celebrationTimer);
+    celebrationTimer = null;
+  }
+
+  const overlay = $("celebrationOverlay");
+
+  overlay.classList.remove("show", "correct", "incorrect");
+
+  celebrationElements.forEach(element => element.remove());
+  celebrationElements = [];
+
+  $("celebrationStars").innerHTML = "";
+}
+
+
+/*
+색종이와 반짝이 만들기
+*/
+
+function createConfetti() {
+  const overlay = $("celebrationOverlay");
+
+  const symbols = ["✨", "⭐", "💖", "🌟", "🎉"];
+
+  for (let i = 0; i < 48; i++) {
+    const piece = document.createElement("span");
+
+    piece.className = "confetti-piece";
+
+    piece.style.left = Math.random() * 100 + "%";
+    piece.style.animationDelay = Math.random() * 0.8 + "s";
+    piece.style.animationDuration = (1.8 + Math.random() * 1.5) + "s";
+
+    piece.style.backgroundColor =
+      ["#ff7aa2", "#ffd166", "#7bdff2", "#b2f7a8",
+       "#b8a1ff", "#ff9f68"][Math.floor(Math.random() * 6)];
+
+    piece.style.transform =
+      "rotate(" + Math.floor(Math.random() * 360) + "deg)";
+
+    overlay.appendChild(piece);
+    celebrationElements.push(piece);
+  }
+
+  for (let i = 0; i < 15; i++) {
+    const sparkle = document.createElement("span");
+
+    sparkle.className = "sparkle";
+    sparkle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+
+    sparkle.style.left = Math.random() * 94 + "%";
+    sparkle.style.top = (20 + Math.random() * 70) + "%";
+    sparkle.style.animationDelay = Math.random() * 0.9 + "s";
+
+    overlay.appendChild(sparkle);
+    celebrationElements.push(sparkle);
+  }
+
+  const starContainer = $("celebrationStars");
+
+  for (let i = 0; i < 8; i++) {
+    const star = document.createElement("span");
+
+    star.className = "celebration-star";
+    star.textContent = i % 2 === 0 ? "⭐" : "✨";
+
+    star.style.left = (5 + Math.random() * 90) + "%";
+    star.style.top = (5 + Math.random() * 90) + "%";
+    star.style.animationDelay = Math.random() * 0.7 + "s";
+
+    starContainer.appendChild(star);
+  }
+}
+
+
+/*
+정답이면 큰 토끼,
+오답이면 큰 곰돌이 표시
+
+correct는 실제 채점 결과를 그대로 사용하므로
+정답률 숫자만으로 정오답을 다시 판단하지 않음.
+*/
+
+function showCelebration(correct, percent) {
+  clearCelebration();
+
+  const overlay = $("celebrationOverlay");
+  const character = $("celebrationCharacter");
+
+  let title, subtitle, imageFile, spokenPhrase;
+  if (correct && percent >= 95) {
+    title = "PERFECT!";
+    subtitle = "완벽해요! 최고예요! ⭐";
+    imageFile = "perfect.png";
+    spokenPhrase = "Perfect! Amazing job!";
+  } else if (correct) {
+    title = "GOOD JOB!";
+    subtitle = "정말 잘했어요! 🎉";
+    imageFile = "goodjob.png";
+    spokenPhrase = "Good job! You did it!";
+  } else {
+    title = "TRY AGAIN!";
+    subtitle = "괜찮아요! 다시 해 봐요! 💪";
+    imageFile = "tryagain.png";
+    spokenPhrase = "Try again! You can do it!";
+  }
+
+  $("celebrationTitle").textContent = title;
+  $("celebrationSubtitle").textContent = subtitle;
+  character.onerror = () => {
+    character.onerror = null;
+    character.style.display = "none";
+    $("celebrationSubtitle").textContent += " (이미지 파일명을 확인해 주세요.)";
+  };
+  character.style.display = "block";
+  character.src = imageFile;
+  character.alt = correct ? "축하하는 토끼" : "다시 도전하라고 응원하는 곰돌이";
+  overlay.classList.add(correct ? "correct" : "incorrect");
+
+  // 브라우저 내장 음성으로 영어 칭찬/격려 문장을 읽어 줍니다.
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(spokenPhrase);
+    utterance.lang = "en-US";
+    utterance.rate = 0.92;
+    utterance.pitch = correct ? 1.12 : 1.0;
+    const voices = window.speechSynthesis.getVoices();
+    const usVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith("en-us"));
+    if (usVoice) utterance.voice = usVoice;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  playSound(correct ? (percent >= 95 ? "perfect" : "correct") : "wrong");
+  createConfetti();
+  requestAnimationFrame(() => overlay.classList.add("show"));
+  celebrationTimer = setTimeout(() => clearCelebration(), 3600);
+}
+
+
+/*
+마이크 중지
+*/
+
+function stopMic() {
+  session++;
+
+  if (recognition) {
+    try {
+      recognition.abort();
+    } catch (e) {}
+  }
+
+  recognition = null;
+  $("micButton").textContent = "🎙️ 영어로 말하기";
+}
+
+
+/*
+문제 목록 불러오기
+*/
+
+function loadQuestions() {
+  const value = $("range").value;
+
+  if (value === "wrong") {
+
+    active = questions.map((q, i) => i)
+      .filter(i => records[i] && !records[i].correct);
+
+    if (!active.length) {
+      $("status").textContent =
+        "틀린 문제가 없어요. 먼저 문제를 풀어 보세요!";
+
+      $("range").value = "all";
+      active = questions.map((q, i) => i);
+    }
+
+  } else if (value === "1") {
+
+    active = questions.map((q, i) => i)
+      .filter(i => i < 10);
+
+  } else if (value === "2") {
+
+    active = questions.map((q, i) => i)
+      .filter(i => i >= 10 && i < 20);
+
+  } else if (value === "3") {
+
+    active = questions.map((q, i) => i)
+      .filter(i => i >= 20);
+
+  } else {
+
+    active = questions.map((q, i) => i);
+
+  }
+
+  index = 0;
+  $("results").style.display = "none";
+
+  render();
+}
+
+
+/*
+정답 단어별 색깔 표시
+*/
+
+function renderAnswerWords(answer, spoken) {
+  const answerWords = answer.match(/\S+/g) || [];
+
+  if (!spoken) {
+    return answerWords.map(word =>
+      '<span class="answer-word word-pending">' +
+      escapeHTML(word) +
+      '</span>'
+    ).join(" ");
+  }
+
+  const spokenWords = normalize(spoken).split(" ").filter(Boolean);
+  const expectedWords = answerWords.map(word => normalize(word));
+
+  const n = expectedWords.length;
+  const m = spokenWords.length;
+
+  const dp = Array.from(
+    { length: n + 1 },
+    () => Array(m + 1).fill(0)
+  );
+
+  for (let i = 0; i <= n; i++) dp[i][0] = i;
+  for (let j = 0; j <= m; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= m; j++) {
+      const cost =
+        expectedWords[i - 1] === spokenWords[j - 1] ? 0 : 1;
+
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost
+      );
+    }
+  }
+
+  const wordStatus = Array(n).fill("pending");
+
+  let i = n;
+  let j = m;
+
+  while (i > 0 || j > 0) {
+    if (
+      i > 0 &&
+      j > 0 &&
+      expectedWords[i - 1] === spokenWords[j - 1] &&
+      dp[i][j] === dp[i - 1][j - 1]
+    ) {
+      wordStatus[i - 1] = "correct";
+      i--;
+      j--;
+      continue;
+    }
+
+    if (
+      i > 0 &&
+      j > 0 &&
+      dp[i][j] === dp[i - 1][j - 1] + 1
+    ) {
+      wordStatus[i - 1] = "uncertain";
+      i--;
+      j--;
+      continue;
+    }
+
+    if (
+      i > 0 &&
+      dp[i][j] === dp[i - 1][j] + 1
+    ) {
+      wordStatus[i - 1] = "pending";
+      i--;
+      continue;
+    }
+
+    if (
+      j > 0 &&
+      dp[i][j] === dp[i][j - 1] + 1
+    ) {
+      j--;
+      continue;
+    }
+
+    break;
+  }
+
+  return answerWords.map((word, position) => {
+    const status = wordStatus[position];
+
+    const className =
+      status === "correct"
+        ? "word-correct"
+        : status === "uncertain"
+          ? "word-uncertain"
+          : "word-pending";
+
+    return '<span class="answer-word ' + className + '">' +
+      escapeHTML(word) +
+      '</span>';
+  }).join(" ");
+}
+
+
+/*
+화면 표시
+*/
+
+function render() {
+  if (!active.length) return;
+
+  const id = currentId();
+  const q = currentQuestion();
+
+  const answered = records[id];
+  const pending = pendingAnswers[id];
+
+  $("question").textContent = q.ko;
+
+  $("answer").hidden = !shown[id];
+
+  if (shown[id]) {
+    const spoken = pending
+      ? pending.spoken
+      : answered
+        ? answered.spoken
+        : "";
+
+    $("answer").innerHTML = renderAnswerWords(q.en, spoken);
+
+    $("legend").hidden = false;
+
+    $("hint").textContent = pending
+      ? "단어 색깔을 확인하고 '정답 확인'을 눌러 채점하세요."
+      : "초록색 단어를 확인하며 문장을 다시 말해 보세요!";
+
+  } else {
+    $("answer").textContent = "";
+    $("legend").hidden = true;
+
+    $("hint").textContent =
+      "영어로 먼저 말해 보세요. 정답은 버튼을 눌러야 나타나요!";
+  }
+
+  $("progressText").textContent =
+    (index + 1) + " / " + active.length + "번";
+
+  $("progressFill").style.width =
+    ((index + 1) / active.length * 100) + "%";
+
+  const correctCount =
+    Object.values(records).filter(r => r.correct).length;
+
+  $("scoreText").textContent =
+    "맞힌 문제: " + correctCount + "개";
+
+  $("prevButton").disabled = index === 0;
+  $("nextButton").disabled = index === active.length - 1;
+
+  if (pending) {
+    $("status").innerHTML =
+      "인식한 문장: <b>" +
+      escapeHTML(pending.spoken) +
+      "</b><br>" +
+      "말하기가 끝났어요. '정답 확인'을 눌러 결과를 확인하세요.";
+
+    return;
+  }
+
+  if (answered) {
+    $("status").innerHTML =
+      "인식한 문장: <b>" +
+      escapeHTML(answered.spoken) +
+      "</b><br>" +
+      (answered.correct
+        ? '<span class="good">🎉 잘했어요! 정답이에요.</span>'
+        : '<span class="bad">다시 연습해 보세요.</span>') +
+      "<br>유사도: " + answered.percent + "%";
+
+  } else {
+    $("status").textContent =
+      "마이크 버튼을 누르고 영어로 말해 보세요.";
+  }
+}
+
+
+/*
+마이크로 영어 인식
+*/
+
+function startMic() {
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    $("status").textContent =
+      "음성 인식을 지원하지 않아요. Chrome 브라우저에서 사이트를 열어 주세요.";
+
+    return;
+  }
+
+  clearCelebration();
+  stopMic();
+
+  const thisSession = session;
+  const id = currentId();
+  const q = currentQuestion();
+
+  recognition = new SpeechRecognition();
+
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+  recognition.continuous = false;
+  recognition.maxAlternatives = 3;
+
+  recognition.onstart = () => {
+    if (thisSession !== session) return;
+
+    $("micButton").textContent = "🎙️ 듣고 있어요...";
+    $("status").textContent = "영어로 말해 보세요!";
+  };
+
+  recognition.onresult = event => {
+    if (thisSession !== session) return;
+
+    const alternatives = Array.from(event.results[0])
+      .map(result => result.transcript.trim())
+      .filter(Boolean);
+
+    let best = alternatives[0] || "";
+    let bestScore = similarity(best, q.en);
+
+    alternatives.slice(1).forEach(text => {
+      const score = similarity(text, q.en);
+
+      if (score > bestScore) {
+        best = text;
+        bestScore = score;
+      }
+    });
+
+    pendingAnswers[id] = {
+      spoken: best,
+      percent: Math.round(bestScore * 100)
+    };
+
+    render();
+
+    $("status").innerHTML =
+      "인식한 문장: <b>" +
+      escapeHTML(best) +
+      "</b><br>" +
+      "정답을 확인하려면 '정답 확인'을 눌러 주세요.";
+  };
+
+  recognition.onerror = event => {
+    if (thisSession !== session) return;
+
+    let message = "음성 인식 중 문제가 발생했어요.";
+
+    if (
+      event.error === "not-allowed" ||
+      event.error === "service-not-allowed"
+    ) {
+      message =
+        "마이크 권한을 허용해 주세요. Chrome 주소창 왼쪽의 사이트 설정을 확인하세요.";
+
+    } else if (event.error === "no-speech") {
+      message = "목소리가 들리지 않았어요. 다시 말해 보세요.";
+
+    } else if (event.error === "network") {
+      message = "인터넷 연결을 확인해 주세요.";
+
+    } else if (event.error === "audio-capture") {
+      message = "마이크가 연결되어 있는지 확인해 주세요.";
+
+    } else if (event.error === "aborted") {
+      return;
+    }
+
+    $("status").textContent = message;
+  };
+
+  recognition.onend = () => {
+    if (thisSession !== session) return;
+
+    $("micButton").textContent = "🎙️ 영어로 말하기";
+  };
+
+  try {
+    recognition.start();
+  } catch (e) {
+    $("status").textContent =
+      "다시 마이크 버튼을 눌러 주세요.";
+  }
+}
+
+
+/*
+정답 공개 및 채점
+
+정답 확인 버튼을 눌렀을 때만 채점.
+채점 결과에 따라 토끼 또는 곰돌이 표시.
+*/
+
+// Web Audio 효과음: 외부 음원 파일 없이 브라우저에서 생성합니다.
+let audioContext = null;
+function playSound(kind) {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!audioContext) audioContext = new AudioCtx();
+    if (audioContext.state === "suspended") audioContext.resume();
+    const now = audioContext.currentTime;
+    const notes = {
+      check: [[520, 0, .08], [680, .09, .09]],
+      correct: [[660, 0, .12], [880, .12, .15], [1046, .27, .2]],
+      perfect: [[660, 0, .1], [784, .1, .1], [988, .2, .1], [1318, .3, .25]],
+      wrong: [[330, 0, .13], [270, .14, .18]],
+      next: [[520, 0, .07], [620, .07, .08]]
+    }[kind] || [];
+    notes.forEach(([freq, delay, duration]) => {
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.type = kind === "wrong" ? "triangle" : "sine";
+      osc.frequency.setValueAtTime(freq, now + delay);
+      gain.gain.setValueAtTime(0.0001, now + delay);
+      gain.gain.exponentialRampToValueAtTime(0.12, now + delay + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + delay + duration);
+      osc.connect(gain); gain.connect(audioContext.destination);
+      osc.start(now + delay); osc.stop(now + delay + duration + 0.02);
+    });
+  } catch (e) { /* 일부 브라우저의 오디오 제한은 무시하고 학습 기능은 계속 작동 */ }
+}
+
+function checkAnswer() {
+  playSound("check");
+  stopMic();
+
+  const id = currentId();
+  const q = currentQuestion();
+  const pending = pendingAnswers[id];
+
+  shown[id] = true;
+
+  /*
+  아직 말하지 않았다면 정답만 공개.
+  캐릭터는 표시하지 않음.
+  */
+
+  if (!pending) {
+    render();
+
+    $("status").innerHTML =
+      "정답: <b>" +
+      escapeHTML(q.en) +
+      "</b><br>" +
+      "이제 정답을 보며 영어로 말해 보세요!";
+
+    return;
+  }
+
+  const score = similarity(pending.spoken, q.en);
+  const percent = Math.round(score * 100);
+
+  const correct =
+    normalize(pending.spoken) === normalize(q.en) ||
+    score >= CORRECT_THRESHOLD;
+
+  records[id] = {
+    spoken: pending.spoken,
+    correct,
+    percent
+  };
+
+  delete pendingAnswers[id];
+
+  render();
+
+  $("status").innerHTML =
+    "내가 말한 문장: <b>" +
+    escapeHTML(records[id].spoken) +
+    "</b><br>" +
+    (correct
+      ? '<span class="good">🎉 잘했어요! 정답이에요.</span>'
+      : '<span class="bad">조금 달라요. 정답을 보며 다시 말해 보세요.</span>') +
+    "<br>정답: <b>" +
+    escapeHTML(q.en) +
+    "</b>" +
+    "<br>유사도: " + percent + "%";
+
+  /*
+  실제 채점 결과를 전달.
+  정답이면 토끼, 오답이면 곰돌이.
+  */
+
+  showCelebration(correct, percent);
+}
+
+
+/*
+영어 음성 듣기
+*/
+
+function listenEnglish() {
+  if (!shown[currentId()]) {
+    $("status").textContent =
+      "먼저 '정답 확인' 버튼을 눌러 영어 문장을 확인해 주세요.";
+
+    return;
+  }
+
+  if (!("speechSynthesis" in window)) {
+    $("status").textContent =
+      "이 브라우저에서는 영어 음성을 재생할 수 없어요.";
+
+    return;
+  }
+
+  const utterance =
+    new SpeechSynthesisUtterance(currentQuestion().en);
+
+  utterance.lang = "en-US";
+  utterance.rate = 0.85;
+
+  const voices = speechSynthesis.getVoices();
+
+  const voice = voices.find(v => /^en-US$/i.test(v.lang));
+
+  if (voice) utterance.voice = voice;
+
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utterance);
+}
+
+
+/*
+결과 보기
+*/
+
+function showResults() {
+  stopMic();
+  clearCelebration();
+
+  const attempted = active.filter(id => records[id]);
+
+  const correct =
+    attempted.filter(id => records[id].correct).length;
+
+  const wrong = attempted.length - correct;
+
+  $("summary").innerHTML =
+    "<p>전체 문제: <b>" + active.length + "개</b></p>" +
+    "<p>시도한 문제: <b>" + attempted.length + "개</b></p>" +
+    '<p class="good">맞힌 문제: ' + correct + "개</p>" +
+    '<p class="bad">틀린 문제: ' + wrong + "개</p>" +
+    "<p>아직 풀지 않은 문제: " +
+    (active.length - attempted.length) + "개</p>";
+
+  $("resultList").innerHTML = attempted.map(id => {
+    const q = questions[id];
+    const r = records[id];
+
+    return '<div class="result-item">' +
+      "<b>" + (id + 1) + ". " + escapeHTML(q.ko) + "</b><br>" +
+      "정답: " + escapeHTML(q.en) + "<br>" +
+      "내가 말한 문장: " + escapeHTML(r.spoken) + "<br>" +
+      (r.correct
+        ? '<span class="good">정답'
+        : '<span class="bad">다시 연습') +
+      " · " + r.percent + "%</span></div>";
+  }).join("");
+
+  $("results").style.display = "block";
+
+  $("results").scrollIntoView({
+    behavior: "smooth"
+  });
+}
+
+
+/*
+버튼 이벤트
+*/
+
+$("micButton").addEventListener("click", startMic);
+
+$("answerButton").addEventListener("click", checkAnswer);
+
+$("listenButton").addEventListener("click", listenEnglish);
+
+
+$("prevButton").addEventListener("click", () => {
+  playSound("next");
+  stopMic();
+  clearCelebration();
+
+  if (index > 0) index--;
+
+  render();
+});
+
+
+$("nextButton").addEventListener("click", () => {
+  playSound("next");
+  stopMic();
+  clearCelebration();
+
+  if (index < active.length - 1) index++;
+
+  render();
+});
+
+
+$("resultButton").addEventListener("click", showResults);
+
+
+$("resetButton").addEventListener("click", () => {
+  stopMic();
+  clearCelebration();
+
+  records = {};
+  shown = {};
+  pendingAnswers = {};
+
+  index = 0;
+
+  $("results").style.display = "none";
+
+  render();
+
+  $("status").textContent = "처음부터 다시 시작해요!";
+});
+
+
+$("retryButton").addEventListener("click", () => {
+  clearCelebration();
+
+  $("range").value = "wrong";
+
+  loadQuestions();
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+});
+
+
+$("range").addEventListener("change", () => {
+  stopMic();
+  clearCelebration();
+
+  loadQuestions();
+});
+
+
+/*
+첫 화면 실행
+*/
+
+loadQuestions();
+
+</script>
+</body>
+</html>
