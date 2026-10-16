@@ -580,8 +580,6 @@ button:disabled {
   </div>
 
   <div class="card">
-    <div class="label">이 문장을 영어로 말해 보세요.</div>
-
     <div class="question" id="question"></div>
 
     <div class="answer" id="answer" hidden></div>
@@ -823,6 +821,18 @@ function clearCelebration() {
 
   celebrationElements.forEach(element => element.remove());
   celebrationElements = [];
+
+  // 팝업을 다시 띄울 때 이전 애니메이션/음성이 겹치지 않도록 초기화합니다.
+  const character = $("celebrationCharacter");
+  if (character) {
+    character.style.animation = "none";
+    void character.offsetWidth;
+    character.style.animation = "";
+  }
+  if (encouragementAudio) {
+    encouragementAudio.pause();
+    encouragementAudio.currentTime = 0;
+  }
 
   $("celebrationStars").innerHTML = "";
 }
@@ -1285,13 +1295,13 @@ function startMic() {
       percent: Math.round(bestScore * 100)
     };
 
-    render();
-
-    $("status").innerHTML =
-      "인식한 문장: <b>" +
-      escapeHTML(best) +
-      "</b><br>" +
-      "정답을 확인하려면 '정답 확인'을 눌러 주세요.";
+    // 음성 인식이 끝나면 자동으로 채점합니다.
+    // 다른 문제로 이동한 경우에는 이전 문제의 답을 채점하지 않습니다.
+    setTimeout(() => {
+      if (thisSession === session && currentId() === id) {
+        checkAnswer();
+      }
+    }, 0);
   };
 
   recognition.onerror = event => {
